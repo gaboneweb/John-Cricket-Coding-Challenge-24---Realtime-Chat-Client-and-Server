@@ -16,8 +16,9 @@ public class Server implements Runnable{
     @Override
     public void run() {
         try {
+            System.out.println("Listening for connections at port " + serverSocket.getLocalPort());
             while (!serverSocket.isClosed() && serverSocket != null) {
-                System.out.println("Listening for connections at port " + serverSocket.getLocalPort());
+
                 Socket socket = serverSocket.accept();
 
                 ClientHandler client = new ClientHandler(socket);

@@ -10,9 +10,11 @@ public class ClientHandler implements Runnable{
 
     private Socket socket;
 
-    private BufferedReader reader;
+    private final BufferedReader reader;
 
     private final PrintStream  writer;
+
+    private String name;
 
     public ClientHandler(Socket socket) throws IOException {
         this.socket = socket;
@@ -20,21 +22,20 @@ public class ClientHandler implements Runnable{
                 socket.getInputStream()));
 
         this.writer = new PrintStream(socket.getOutputStream());
+        this.name = reader.readLine();
 
     }
     @Override
     public void run() {
-        while(socket.isConnected() && !socket.isClosed()){
-            try{
-                String line;
-                while((line = reader.readLine()) != null){
-                    writer.println(line);
-                }
-            }catch (IOException e){
-                e.printStackTrace();
-            }finally {
-                close();
+        try{
+            String line;
+            while((line = reader.readLine()) != null && socket.isConnected() && !socket.isClosed()){
+                writer.println(line);
             }
+        }catch (IOException e){
+            e.printStackTrace();
+        }finally {
+            close();
         }
     }
 
