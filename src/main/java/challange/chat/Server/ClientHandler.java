@@ -4,6 +4,8 @@ import java.io.*;
 import java.net.Socket;
 import java.util.*;
 
+import javax.imageio.IIOException;
+
 public class ClientHandler implements Runnable{
 
     public static List<ClientHandler> clientList = new ArrayList<>();
@@ -23,6 +25,7 @@ public class ClientHandler implements Runnable{
 
         this.writer = new PrintStream(socket.getOutputStream());
         this.name = reader.readLine();
+        sendMessage("Welcome to the chat room!!");
 
     }
     @Override
@@ -30,13 +33,36 @@ public class ClientHandler implements Runnable{
         try{
             String line;
             while((line = reader.readLine()) != null && socket.isConnected() && !socket.isClosed()){
-                writer.println(line);
+                if(line.equalsIgnoreCase("quit")){
+                    broadCastMessage(name+ " has left the chat!!!");
+                    System.out.println(name+ " has left the chat!!!");
+                    throw new IIOException("Client Disconnected");
+                }
+                broadCastMessage(name+": "+line);
             }
+            System.out.println("Client Quit");
         }catch (IOException e){
-            e.printStackTrace();
+            removeClient();
         }finally {
             close();
         }
+    }
+
+    private void sendMessage(String message){
+        writer.println(message);
+    }
+
+
+    public void broadCastMessage(String message){
+        for(ClientHandler clientHandler: ClientHandler.clientList){
+            if(clientHandler != this){
+                clientHandler.sendMessage(message);
+            }
+        }
+    }
+
+    private void removeClient(){
+        ClientHandler.clientList.remove(this);
     }
 
     public void close(){

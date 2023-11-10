@@ -17,6 +17,8 @@ public class Client {
 
     private PrintStream  writer;
 
+    private String name;
+
     public Client(Socket socket){
         this.socket = socket;
         this.scanner = new Scanner(System.in);
@@ -62,35 +64,59 @@ public class Client {
 
 
     public void runClient(){
-        String name = getInput("Name: ");
+        name = getInput("Name: ");
         sendMessage(name);
-        while(this.socket.isConnected() && !this.socket.isClosed()){
-            try {
-                String message = getInput("send: ");
-                if(message.equalsIgnoreCase("quit")){
-                    throw new IOException("Quit from the chat");
-                }
-                sendMessage(message);
-                String reply = getMessage();
-
-                System.out.println("received: " + reply);
-
-            }catch(IOException e){
-                disconnect();
-            }
-
-        }
+        this.listenForMessage();
+        this.sendMessages();
     }
+
+
 
     public String getInput(String prompt){
         System.out.print(prompt);
         return scanner.nextLine();
     }
 
-    public void sendMessage(String message){
+
+    private void sendMessage(String message){
         this.writer.println(message);
     }
+    
 
+    public void sendMessages(){
+        try{
+            while(socket.isConnected() && !socket.isClosed()){
+                String message = getInput("");
+                sendMessage(message);
+                if(message.equalsIgnoreCase("quit")){
+                    throw new IOException("Quit from the chat");
+                }
+                System.out.println(name+": " + message);
+                
+            }
+        }catch(IOException e){
+            disconnect();
+        }
+    }
+    public void listenForMessage(){
+        new Thread(() ->{
+            try{
+                while(socket.isConnected() && !socket.isClosed()){
+                    String message = getMessage();
+
+                    if(message == null){
+                        break;
+                    }
+                    System.out.println(message);
+                }
+                throw new IOException();
+            }catch(IOException e){
+                disconnect();
+
+            }
+            
+        }).start();
+    }
     public String getMessage() throws IOException{
         return this.reader.readLine();
     }

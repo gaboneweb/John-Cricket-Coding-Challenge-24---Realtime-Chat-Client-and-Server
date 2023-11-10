@@ -61,7 +61,7 @@
                             <archive>
                                 <manifest>
                                     <mainClass>
-                                        challange.chat.Main
+                                        challange.chat.Client.Client
                                     </mainClass>
                                 </manifest>
                             </archive>
